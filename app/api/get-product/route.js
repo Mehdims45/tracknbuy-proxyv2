@@ -1,11 +1,24 @@
-﻿// app/api/get-product/route.js
+// app/api/get-product/route.js
+
+// Helper function to extract ASIN from Amazon URL
+function extractAsinFromUrl(url) {
+  const regex = /(?:dp|gp\/product|d|asin)\/([A-Z0-9]{10})/i;
+  const match = url.match(regex);
+  return match ? match[1] : null;
+}
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  const asin = searchParams.get("asin");
+  let asin = searchParams.get("asin");
+  const url = searchParams.get("url");
+
+  if (!asin && url) {
+    asin = extractAsinFromUrl(url);
+  }
+
   if (!asin) {
     return new Response(
-      JSON.stringify({ error: "asin parameter is required" }),
+      JSON.stringify({ error: "asin parameter or a valid Amazon URL is required" }),
       { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
