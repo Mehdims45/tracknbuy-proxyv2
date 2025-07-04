@@ -32,7 +32,17 @@ export async function POST(request: Request) {
     const target = url || `https://www.amazon.com/dp/${asin}`;
 
     const scrapingRes = await fetch(
-      `https://app.scrapingbee.com/api/v1/scrape?api_key=${key}&url=${encodeURIComponent(target)}`
+      `https://app.scrapingbee.com/api/v1/scrape`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          api_key: key,
+          url: target,
+        }),
+      }
     );
 
     if (!scrapingRes.ok) {
