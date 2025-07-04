@@ -31,14 +31,34 @@ export async function POST(request: Request) {
     }
     const target = url || `https://www.amazon.com/dp/${asin}`;
     const scrapingRes = await fetch(
-      `https://api.scrapingdog.com/scrape?api_key=${key}&url=${encodeURIComponent(target)}`
+      `https://api.scrapingdog.com/scrape?api_key=${key}&url=${encodeURIComponent(target)}`,
+      { headers: { 'User-Agent': 'Mozilla/5.0' } }
     );
     if (!scrapingRes.ok) {
       const text = await scrapingRes.text();
       console.error('ScrapingDog error:', text);
       return NextResponse.json({ error: 'Scraping failed' }, { status: 502 });
     }
-    const scraped = await scrapingRes.json();
+
+    if (!scrapingRes.headers.get('content-type')?.includes('application/json')) {
+      const html = await scrapingRes.text();
+      console.error('HTML error from ScrapingDog:', html.slice(0, 200));
+      return NextResponse.json(
+        { error: 'Scraping service error' },
+        { status: 502 }
+      );
+    }
+
+    let scraped: any;
+    try {
+      scraped = await scrapingRes.json();
+    } catch (e) {
+      console.error('ScrapingDog returned non-JSON:', await scrapingRes.text());
+      return NextResponse.json(
+        { error: 'Unexpected response from ScrapingDog' },
+        { status: 502 }
+      );
+    }
 
     return NextResponse.json({
       price: scraped.price,
