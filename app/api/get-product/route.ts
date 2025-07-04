@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     }
     const target = url || `https://www.amazon.com/dp/${asin}`;
     const scrapingRes = await fetch(
-      `https://api.scrapingdog.com/scrape?api_key=${key}&url=${encodeURIComponent(target)}`
+      `https://api.scrapingdog.com/scrape?api_key=${key}&url=${encodeURIComponent(target)}&dynamic=true&wait=5000`
     );
     if (!scrapingRes.ok) {
       const text = await scrapingRes.text();
