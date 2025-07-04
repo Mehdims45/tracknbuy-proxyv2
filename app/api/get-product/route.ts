@@ -21,21 +21,23 @@ export async function POST(request: Request) {
       );
     }
 
-    const key = process.env.SCRAPINGDOG_API_KEY;
+    const key = "VABBKW49AVXU3H9CV6ESZ39O7W3XVXJIJGB4GCV2FGOH9OTNHZU8VFN0D1AP6C4CCIBT70E0LBLU6CEH";
     if (!key) {
-      console.error('SCRAPINGDOG_API_KEY missing');
+      console.error('SCRAPINGBEE_API_KEY missing');
       return NextResponse.json(
         { error: 'Server misconfiguration' },
         { status: 500 }
       );
     }
     const target = url || `https://www.amazon.com/dp/${asin}`;
+
     const scrapingRes = await fetch(
-      `https://api.scrapingdog.com/scrape?api_key=${key}&url=${encodeURIComponent(target)}&dynamic=true&wait=5000`
+      `https://app.scrapingbee.com/api/v1/scrape?api_key=${key}&url=${encodeURIComponent(target)}`
     );
+
     if (!scrapingRes.ok) {
       const text = await scrapingRes.text();
-      console.error('ScrapingDog error:', text);
+      console.error('ScrapingBee error:', text);
       return NextResponse.json({ error: 'Scraping failed' }, { status: 502 });
     }
     const text = await scrapingRes.text();
@@ -43,7 +45,7 @@ export async function POST(request: Request) {
     try {
       scraped = JSON.parse(text);
     } catch (e) {
-      console.error("Failed to parse JSON from ScrapingDog. Response was:", text);
+      console.error("Failed to parse JSON from ScrapingBee. Response was:", text);
       return NextResponse.json({ error: "Scraping service returned invalid data." }, { status: 502 });
     }
 
