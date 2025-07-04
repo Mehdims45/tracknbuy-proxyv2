@@ -22,10 +22,22 @@ export async function POST(request: Request) {
     }
 
     const key = process.env.SCRAPINGDOG_API_KEY;
+    if (!key) {
+      console.error('SCRAPINGDOG_API_KEY missing');
+      return NextResponse.json(
+        { error: 'Server misconfiguration' },
+        { status: 500 }
+      );
+    }
     const target = url || `https://www.amazon.com/dp/${asin}`;
     const scrapingRes = await fetch(
       `https://api.scrapingdog.com/scrape?api_key=${key}&url=${encodeURIComponent(target)}`
     );
+    if (!scrapingRes.ok) {
+      const text = await scrapingRes.text();
+      console.error('ScrapingDog error:', text);
+      return NextResponse.json({ error: 'Scraping failed' }, { status: 502 });
+    }
     const scraped = await scrapingRes.json();
 
     return NextResponse.json({
