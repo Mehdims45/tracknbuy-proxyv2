@@ -38,7 +38,14 @@ export async function POST(request: Request) {
       console.error('ScrapingDog error:', text);
       return NextResponse.json({ error: 'Scraping failed' }, { status: 502 });
     }
-    const scraped = await scrapingRes.json();
+    const text = await scrapingRes.text();
+    let scraped;
+    try {
+      scraped = JSON.parse(text);
+    } catch (e) {
+      console.error("Failed to parse JSON from ScrapingDog. Response was:", text);
+      return NextResponse.json({ error: "Scraping service returned invalid data." }, { status: 502 });
+    }
 
     return NextResponse.json({
       price: scraped.price,
